@@ -14,10 +14,12 @@ false=1
 function check_the_task()
 {
     res=$(ps | grep pppd)
+    ifres=$(ifconfig | grep pppd)
 
-    [[ "$res" == "" ]] && errcode=$false
+    # if ifconfig has no pppd, then the pppd is not ready
+    [[ "$res" == "" ]] && [[ "$ifres" == "" ]] && errcode=$false
 
-    if [[ errcode == false ]]
+    if [[ $errcode == $true ]]
     then
     echo true
     echo "res get the result = $res"
@@ -35,11 +37,11 @@ pppd_powerOn_ok=$false
 for i ({1..20})
 {
     echo    i=$i
-    #sleep 1   # sleep to check
+    sleep 1   # sleep to check
     check_the_task
     res=$?
-    echo exitcode=$res
-    if [[ $res == $failed ]]
+    echo "exitcode=$res"
+    if [[ $res == $false ]]
     then 
         echo "continue check"
     else   
@@ -54,8 +56,10 @@ echo i=$i
 if [[ $pppd_powerOn_ok == $true ]]
 then
     echo "pppd power on success"
+    exit $true
 else
     echo "pppd power on failed"
+    exit $false
 fi
 
 
